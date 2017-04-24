@@ -6,13 +6,17 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.avos.avoscloud.AVCloudQueryResult;
 import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.AVObject;
 import com.avos.avoscloud.AVQuery;
+import com.avos.avoscloud.AVUser;
 import com.avos.avoscloud.CloudQueryCallback;
 import com.example.jenice.myplanapp.R;
 import com.example.jenice.myplanapp.adapter.PlanItemAdapter;
@@ -35,6 +39,8 @@ public class PlanDetails  extends AppCompatActivity implements AdapterView.OnIte
     PlanItemAdapter adapter;
     ListView plan_detail_list;
     Context context;
+
+    AVUser user = AVUser.getCurrentUser();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +107,9 @@ public class PlanDetails  extends AppCompatActivity implements AdapterView.OnIte
                 plan_detail_list.setAdapter(adapter);
             }
         },PlanDetail.class,plan_name);
+
+        //加入计划
+        Button btn_join = (Button) findViewById(R.id.Plan_detail_join);
     }
 
 
@@ -116,5 +125,15 @@ public class PlanDetails  extends AppCompatActivity implements AdapterView.OnIte
         intent.putExtras(bundle);
         startActivity(intent);
     }
+
+    //加入计划的响应函数
+    public void joinPlan(View view){
+        AVObject join_plan = new AVObject("Participate");
+        join_plan.put("UserName",user.getUsername());
+        join_plan.put("PlanName",plan_name);
+        join_plan.saveInBackground();
+        Toast.makeText(PlanDetails.this,"跳转到我的计划界面查看",Toast.LENGTH_LONG).show();
+    }
+
 }
 

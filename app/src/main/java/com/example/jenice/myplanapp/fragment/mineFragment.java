@@ -11,13 +11,18 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.avos.avoscloud.AVCloudQueryResult;
+import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.AVQuery;
 import com.avos.avoscloud.AVUser;
+import com.avos.avoscloud.CloudQueryCallback;
 import com.example.jenice.myplanapp.R;
 import com.example.jenice.myplanapp.mine.MineCreateApply;
 import com.example.jenice.myplanapp.mine.MineMessage;
 import com.example.jenice.myplanapp.mine.MinePersonal;
 import com.example.jenice.myplanapp.mine.MinePocket;
 import com.example.jenice.myplanapp.mine.MineSetting;
+import com.example.jenice.myplanapp.task.updatePlanImgTask;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -34,7 +39,6 @@ public class mineFragment extends Fragment {
     public mineFragment() {
         // Required empty public constructor
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -54,7 +58,17 @@ public class mineFragment extends Fragment {
         ivBackgroung = (ImageView) view.findViewById(R.id.iv_mine_backgound);
 
         tvUsername.setText(user.getUsername());
-        //图片背景图都没设置！！！！！！！！！！！！
+        //加载用户的头像
+        String cql1 = "select url from _File where name=?";
+        AVQuery.doCloudQueryInBackground(cql1, new CloudQueryCallback<AVCloudQueryResult>() {
+            @Override
+            public void done(AVCloudQueryResult avCloudQueryResult, AVException e) {
+                //显示用户头像中最新的一张，后台管理员删除旧图像
+                String url =  avCloudQueryResult.getResults().get(avCloudQueryResult.getResults().size()-1).getString("url");
+                //开启异步线程加载图片
+                new updatePlanImgTask(ivPhoto).execute(url,user.getUsername());
+            }
+        }, user.getUsername());
         return view;
     }
 

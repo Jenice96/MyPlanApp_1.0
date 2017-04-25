@@ -39,6 +39,7 @@ public class PlanDetails  extends AppCompatActivity implements AdapterView.OnIte
     PlanItemAdapter adapter;
     ListView plan_detail_list;
     Context context;
+    Button btn_join;
 
     AVUser user = AVUser.getCurrentUser();
 
@@ -109,7 +110,9 @@ public class PlanDetails  extends AppCompatActivity implements AdapterView.OnIte
         },PlanDetail.class,plan_name);
 
         //加入计划
-        Button btn_join = (Button) findViewById(R.id.Plan_detail_join);
+        btn_join = (Button) findViewById(R.id.Plan_detail_join);
+        //检测当前用户是否已经加入计划
+        check_plan();
     }
 
 
@@ -128,12 +131,36 @@ public class PlanDetails  extends AppCompatActivity implements AdapterView.OnIte
 
     //加入计划的响应函数
     public void joinPlan(View view){
+        //数据库加入一条参与记录
         AVObject join_plan = new AVObject("Participate");
         join_plan.put("UserName",user.getUsername());
         join_plan.put("PlanName",plan_name);
         join_plan.saveInBackground();
+
+        //数据库加入一条消息记录
+        AVObject msg_join = new AVObject("Message");
+        msg_join.put("UserName",user.getUsername());
+        msg_join.put("Name","参加计划"+plan_name+"成功");
+        msg_join.put("Content","您已经成功参加计划，快去打卡吧!");
+        msg_join.put("Type","join_plan");
+        msg_join.saveInBackground();
+
         Toast.makeText(PlanDetails.this,"跳转到我的计划界面查看",Toast.LENGTH_LONG).show();
     }
 
+    //检测用户是否已经加入计划
+    public void check_plan(){
+        String cql = "select objectId,Schedule from Participate where UserName=? and PlanName=? ";
+        AVQuery.doCloudQueryInBackground(cql, new CloudQueryCallback<AVCloudQueryResult>() {
+            @Override
+            public void done(AVCloudQueryResult avCloudQueryResult, AVException e) {
+                if(avCloudQueryResult!=null)
+                {
+                    btn_join.setText("你已经加入该计划了!");
+                    btn_join.setEnabled(false);
+                }
+            }
+        },user.getUsername(),plan_name);
+    }
 }
 

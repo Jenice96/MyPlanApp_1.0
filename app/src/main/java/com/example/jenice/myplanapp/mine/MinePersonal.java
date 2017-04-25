@@ -1,7 +1,13 @@
 package com.example.jenice.myplanapp.mine;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
@@ -11,16 +17,24 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.avos.avoscloud.AVCloudQueryResult;
 import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.AVFile;
 import com.avos.avoscloud.AVObject;
+import com.avos.avoscloud.AVQuery;
 import com.avos.avoscloud.AVUser;
+import com.avos.avoscloud.CloudQueryCallback;
 import com.avos.avoscloud.GetCallback;
+import com.avos.avoscloud.SaveCallback;
 import com.example.jenice.myplanapp.R;
 import com.example.jenice.myplanapp.fragment.MainActivity;
+import com.example.jenice.myplanapp.task.updatePlanImgTask;
+
+import java.io.FileNotFoundException;
 
 public class MinePersonal extends AppCompatActivity implements View.OnClickListener{
 
-    private ImageView ivBack,ivAccountGo;
+    private ImageView ivBack,ivAccountGo,ivphoto;
     private LinearLayout llPhoto;
     private EditText etGoal,etIntro;
     private TextView tvEdit,tvName,tvSex,tvGoal,tvIntro;
@@ -28,6 +42,8 @@ public class MinePersonal extends AppCompatActivity implements View.OnClickListe
     private String gender,goal,intro;
 
     private AVUser user = AVUser.getCurrentUser();
+    //调用系统相册-选择图片
+    private static final int IMAGE = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +52,7 @@ public class MinePersonal extends AppCompatActivity implements View.OnClickListe
 
         ivBack = (ImageView) findViewById(R.id.iv_mine_personal_back);
         ivAccountGo = (ImageView) findViewById(R.id.iv_mine_personal_account);
+        ivphoto = (ImageView) findViewById(R.id.iv_mine_personal_photo);
         llPhoto = (LinearLayout) findViewById(R.id.ll_mine_personal_photo);
         etGoal = (EditText) findViewById(R.id.et_mine_personal_goal_edit);
         etIntro = (EditText) findViewById(R.id.et_mine_personal_intro_edit);
@@ -64,6 +81,18 @@ public class MinePersonal extends AppCompatActivity implements View.OnClickListe
 
         tvName.setText(user.getUsername());
         showInfo();
+
+        //加载用户的头像
+        String cql1 = "select url from _File where name=?";
+        AVQuery.doCloudQueryInBackground(cql1, new CloudQueryCallback<AVCloudQueryResult>() {
+            @Override
+            public void done(AVCloudQueryResult avCloudQueryResult, AVException e) {
+                //显示用户头像中最新的一张，后台管理员删除旧图像
+                String url =  avCloudQueryResult.getResults().get(avCloudQueryResult.getResults().size()-1).getString("url");
+                //开启异步线程加载图片
+                new updatePlanImgTask(ivphoto).execute(url,user.getUsername());
+            }
+        }, user.getUsername());
     }
 
     @Override
@@ -85,7 +114,9 @@ public class MinePersonal extends AppCompatActivity implements View.OnClickListe
                 break;
             //修改头像
             case R.id.ll_mine_personal_photo:
-
+                //调用相册
+                Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                startActivityForResult(intent, IMAGE);
                 break;
             //编辑资料,当点击编辑会变为完成，点击完成弹出对话框，确认后修改信息
             case R.id.tv_mine_personal_edit:
@@ -96,6 +127,38 @@ public class MinePersonal extends AppCompatActivity implements View.OnClickListe
                     changeToDone();
                 }
                 break;
+        }
+    }
+
+    //相册图片选择之后的响应函数
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        //获取图片路径
+        if (requestCode == IMAGE && resultCode == Activity.RESULT_OK && data != null) {
+            Uri selectedImage = data.getData();
+            String[] filePathColumns = {MediaStore.Images.Media.DATA};
+            Cursor c = getContentResolver().query(selectedImage, filePathColumns, null, null, null);
+            c.moveToFirst();
+            int columnIndex = c.getColumnIndex(filePathColumns[0]);
+            String imagePath = c.getString(columnIndex);
+            final Bitmap bmp= BitmapFactory.decodeFile(imagePath);
+            //上传图片
+            try {
+                //自己定义一个文件名字
+                String file_name = user.getUsername();
+                AVFile file = AVFile.withAbsoluteLocalPath(file_name, imagePath);
+                file.saveInBackground(new SaveCallback() {
+                    @Override
+                    public void done(AVException e) {
+                        ivphoto.setImageBitmap(bmp);
+                    }
+                });
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            c.close();
         }
     }
 

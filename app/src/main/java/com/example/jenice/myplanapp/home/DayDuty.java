@@ -2,12 +2,17 @@ package com.example.jenice.myplanapp.home;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.avos.avoscloud.AVCloudQueryResult;
 import com.avos.avoscloud.AVException;
+import com.avos.avoscloud.AVObject;
 import com.avos.avoscloud.AVQuery;
+import com.avos.avoscloud.AVUser;
 import com.avos.avoscloud.CloudQueryCallback;
 import com.example.jenice.myplanapp.R;
 import com.example.jenice.myplanapp.task.updatePlanImgTask;
@@ -18,6 +23,8 @@ import com.example.jenice.myplanapp.task.updatePlanImgTask;
 
 public class DayDuty extends AppCompatActivity {
     TextView duty_instruction;
+    AVUser user = AVUser.getCurrentUser();
+    String plan_name;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +34,7 @@ public class DayDuty extends AppCompatActivity {
         Bundle bundle = this.getIntent().getExtras();
         int plan_day=bundle.getInt("PlanDay");
         String detail_name=bundle.getString("PlanDetailName");
-        String plan_name=bundle.getString("PlanName");
+        plan_name=bundle.getString("PlanName");
 
         TextView duty_day= (TextView) findViewById(R.id.day_duty_daynum);
         duty_day.setText("DAY"+plan_day);
@@ -59,6 +66,33 @@ public class DayDuty extends AppCompatActivity {
                 new updatePlanImgTask(imageview).execute(url,tmp_image);
             }
         }, tmp_image);
+
+        Button btn_signin = (Button) findViewById(R.id.day_duty_btn);
+
     }
+
+    //获取用户打卡的计划ID
+    public void sign_in(View view){
+        //根据用户名和计划名获取ID
+        String cql = "select objectId,Schedule from Participate where UserName=? and PlanName=?";
+        AVQuery.doCloudQueryInBackground(cql, new CloudQueryCallback<AVCloudQueryResult>() {
+            @Override
+            public void done(AVCloudQueryResult avCloudQueryResult, AVException e) {
+                String objectId =  avCloudQueryResult.getResults().get(0).getObjectId();
+                int Schedule = avCloudQueryResult.getResults().get(0).getInt("Schedule");
+                sign_in_help(objectId,Schedule);
+            }
+        },user.getUsername(),plan_name);
+    }
+
+    //根据ID跟新数据
+    public void sign_in_help(String objectId,int Schedule){
+        AVObject participate = AVObject.createWithoutData("Participate",objectId);
+        participate.put("Schedule",Schedule+1);
+        participate.saveInBackground();
+        Toast.makeText(DayDuty.this,"打卡成功了",Toast.LENGTH_LONG).show();
+    }
+
+
 }
 

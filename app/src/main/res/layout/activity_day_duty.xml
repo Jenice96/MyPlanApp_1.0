@@ -118,9 +118,11 @@
         android:layout_height="0dp"
         android:text="我要打卡"
         android:textColor="@color/white"
-        android:background="@drawable/button_shape"
+        android:background="#ff5e2b"
         android:layout_gravity="center"
         android:textSize="20dp"
-        android:layout_weight="1.1" />
+        android:layout_weight="1.1"
+        android:id="@+id/day_duty_btn"
+        android:onClick="sign_in"/>
 
 </LinearLayout>

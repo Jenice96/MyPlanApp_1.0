@@ -61,7 +61,7 @@
         <com.example.jenice.myplanapp.AvatarImageView
             android:layout_width="80dp"
             android:layout_height="80dp"
-            android:background="@drawable/tele"
+            android:background="@null"
             android:layout_alignParentBottom="true"
             android:layout_marginLeft="10dp"
             android:id="@+id/plan_detail_photo"/>
@@ -111,13 +111,16 @@
     </ListView>
 
     <Button
+        android:id="@+id/Plan_detail_join"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:text="加入计划"
         android:textColor="@color/white"
-        android:background="@drawable/button_shape"
+        android:background="#ff5e2b"
         android:layout_marginBottom="0dp"
         android:textSize="20dp"
-        android:layout_weight="1"/>
+        android:layout_weight="1"
+        android:onClick="joinPlan"
+        android:layout_marginEnd="3dp"/>
 
 </LinearLayout>

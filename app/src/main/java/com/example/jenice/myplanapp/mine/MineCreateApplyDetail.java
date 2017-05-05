@@ -10,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.avos.avoscloud.AVObject;
 import com.avos.avoscloud.AVUser;
 import com.example.jenice.myplanapp.R;
 
@@ -20,7 +21,7 @@ public class MineCreateApplyDetail extends AppCompatActivity implements View.OnC
     private ImageView ivPhoto,ivBack;
     private Button btnOK;
     private AVUser user = AVUser.getCurrentUser();
-    private String name,content,day;
+    private String name,content,day,planName;
     private Intent intent;
 
     @Override
@@ -38,10 +39,13 @@ public class MineCreateApplyDetail extends AppCompatActivity implements View.OnC
         ivBack.setOnClickListener(this);
         ivPhoto.setOnClickListener(this);
         btnOK.setOnClickListener(this);
-        intent = this.getIntent();
-        day = intent.getStringExtra("day");
-        tvDay.setText("Day "+day);
 
+        intent = this.getIntent();
+        Bundle bundle = intent.getExtras();
+        day = bundle.getString("day");
+        planName = bundle.getString("planName");
+
+        tvDay.setText("Day "+day);
     }
 
     @Override
@@ -52,7 +56,7 @@ public class MineCreateApplyDetail extends AppCompatActivity implements View.OnC
                 break;
             case R.id.iv_mine_create_apply_detail_back:
                 finish();
-                startActivity(new Intent(MineCreateApplyDetail.this,MineCreateApply.class));
+                startActivity(new Intent(MineCreateApplyDetail.this,MineCreateApplyNext.class));
                 break;
             case R.id.btn_mine_create_apply_detail_ok:
                 //没有判断是否上传图片！！！！！！
@@ -63,6 +67,13 @@ public class MineCreateApplyDetail extends AppCompatActivity implements View.OnC
                 }else if (content.length()==0){
                     Toast.makeText(getApplicationContext(), "请填写任务步骤！", Toast.LENGTH_SHORT).show();
                 }else{
+                    AVObject upload = new AVObject("PlanDetail");
+                    upload.put("PlanContent",name);
+                    upload.put("PlanInstruction",content);
+                    upload.put("PlanName",planName);
+                    upload.put("PlanDay",Integer.parseInt(day));
+                    upload.saveInBackground();
+
                     Bundle bundle = new Bundle();
                     bundle.putString("name",name);
                     bundle.putString("day",day);

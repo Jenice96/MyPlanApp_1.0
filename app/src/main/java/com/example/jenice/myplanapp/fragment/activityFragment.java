@@ -82,8 +82,6 @@ public class activityFragment extends Fragment {
                 FillList();
             }
         });
-
-
     }
 
     //根据图片填充list

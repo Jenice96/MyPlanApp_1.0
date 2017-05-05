@@ -20,6 +20,7 @@ import com.example.jenice.myplanapp.R;
 import com.example.jenice.myplanapp.mine.MineCreateApply;
 import com.example.jenice.myplanapp.mine.MineMessage;
 import com.example.jenice.myplanapp.mine.MinePersonal;
+import com.example.jenice.myplanapp.mine.MinePlan;
 import com.example.jenice.myplanapp.mine.MinePocket;
 import com.example.jenice.myplanapp.mine.MineSetting;
 import com.example.jenice.myplanapp.task.updatePlanImgTask;
@@ -123,7 +124,9 @@ public class mineFragment extends Fragment {
         rlPlan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                Intent intent_plan = new Intent(getActivity(), MinePlan.class);
+                getActivity().finish();
+                startActivity(intent_plan);
             }
         });
         //个人资料部分

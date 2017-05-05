@@ -1,5 +1,6 @@
 package com.example.jenice.myplanapp.home;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -25,6 +26,7 @@ public class DayDuty extends AppCompatActivity {
     TextView duty_instruction;
     AVUser user = AVUser.getCurrentUser();
     String plan_name;
+    int plan_day;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +34,7 @@ public class DayDuty extends AppCompatActivity {
         setContentView(R.layout.activity_day_duty);
 
         Bundle bundle = this.getIntent().getExtras();
-        int plan_day=bundle.getInt("PlanDay");
+        plan_day=bundle.getInt("PlanDay");
         String detail_name=bundle.getString("PlanDetailName");
         plan_name=bundle.getString("PlanName");
 
@@ -80,19 +82,38 @@ public class DayDuty extends AppCompatActivity {
             public void done(AVCloudQueryResult avCloudQueryResult, AVException e) {
                 String objectId =  avCloudQueryResult.getResults().get(0).getObjectId();
                 int Schedule = avCloudQueryResult.getResults().get(0).getInt("Schedule");
-                sign_in_help(objectId,Schedule);
+                boolean flag=check_sign_in(Schedule);
+                sign_in_help(objectId,Schedule ,flag);
             }
         },user.getUsername(),plan_name);
     }
 
     //根据ID跟新数据
-    public void sign_in_help(String objectId,int Schedule){
-        AVObject participate = AVObject.createWithoutData("Participate",objectId);
-        participate.put("Schedule",Schedule+1);
-        participate.saveInBackground();
-        Toast.makeText(DayDuty.this,"打卡成功了",Toast.LENGTH_LONG).show();
+    public void sign_in_help(String objectId,int Schedule,boolean flag){
+        if(flag==true){
+            AVObject participate = AVObject.createWithoutData("Participate",objectId);
+            participate.put("Schedule",Schedule+1);
+            participate.saveInBackground();
+
+            Bundle bundle = new Bundle();
+            bundle.putString("UserName",user.getUsername());
+            bundle.putString("PlanName",plan_name);
+            bundle.putInt("Day",Schedule+1);
+            Intent intent = new Intent(DayDuty.this, SignIn.class);
+            intent.putExtras(bundle);
+            startActivity(intent);
+        }
+        else
+            Toast.makeText(this,"你之前的打卡还未完成",Toast.LENGTH_LONG).show();
     }
 
+    //判断当前打卡是否成立
+    public boolean check_sign_in(int schedule){
+        if(schedule==plan_day-1)
+            return true;
+        else
+            return false;
+    }
 
 }
 

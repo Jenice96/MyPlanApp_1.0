@@ -91,6 +91,15 @@
             android:layout_marginLeft="10dp"
             />
 
+        <Button
+            android:id="@+id/btn_collect_plan"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@drawable/collect"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:onClick="Collection"
+            />
     </RelativeLayout>
 
     <TextView

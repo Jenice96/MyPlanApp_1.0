@@ -3,6 +3,7 @@ package com.example.jenice.myplanapp.mine;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -43,7 +44,7 @@ public class MinePlan extends AppCompatActivity implements AdapterView.OnItemCli
             @Override
             public void done(AVCloudQueryResult avCloudQueryResult, AVException e) {
                 participateList = (List<Participate>) avCloudQueryResult.getResults();
-
+                Log.d("","AAA");
             }
         }, Participate.class);
 
